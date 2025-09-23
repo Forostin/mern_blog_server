@@ -115,11 +115,15 @@ import  checkAuth  from './utils/checkAuth.js';
 import * as UserController from './controllers/UserController.js';
 import * as PostController  from './controllers/PostController.js';
 
+import dotenv from "dotenv";
+dotenv.config();
+
 
 // Constants:
 const PORT = 3002;
 const DB_USER = process.env.DB_USER;
-const DB_PASSWORD = process.env.DB_PASSWORD;
+const PASSWORD = process.env.DB_PASSWORD;
+const DB_PASSWORD = encodeURIComponent(`${PASSWORD}`) 
 const DB_NAME = process.env.DB_NAME;
 const URL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@myclusterfortest.evvrx.mongodb.net/${DB_NAME}?retryWrites=true&w=majority&appName=MyClusterForTest`
 
@@ -180,6 +184,22 @@ app.get('/tags', PostController.getLastTags);
 app.get('/posts', PostController.getAll);
 app.get('/posts/tags', PostController.getLastTags);
 app.get('/posts/:id', PostController.getOne);
+// ++++++++++++++++++++++++++
+// app.get('/posts/:id', async (req, res) => {
+//   try {
+//     const post = await PostModel.findById(req.params.id);
+//     if (!post) {
+//       return res.status(404).json({ message: "Статья не найдена" });
+//     }
+//     res.json(post);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Не удалось получить статью" });
+//   }
+// });
+
+
+// Функціонал лише для авторизованих користувачів checkAuth:
 app.post('/posts', checkAuth, postCreateValidation, handleValidationErrors, PostController.create);
 app.delete('/posts/:id', checkAuth, PostController.remove);
 app.patch(

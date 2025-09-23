@@ -4,10 +4,7 @@ export const getLastTags = async (req, res) => {
   try {
     const posts = await PostModel.find().limit(5).exec();
 
-    const tags = posts
-      .map((obj) => obj.tags)
-      .flat()
-      .slice(0, 5);
+    const tags = posts.map((obj) => obj.tags).flat().slice(0, 5);  
 
     res.json(tags);
   } catch (err) {
@@ -17,54 +14,62 @@ export const getLastTags = async (req, res) => {
     });
   }
 };
+    
+// export const getAll = async (req, res) => {
+//   try {
+//     const posts = await PostModel.find().populate('user').exec();
+//     res.json(posts);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({
+//       message: 'Не удалось получить статьи',
+//     });
+//   }
+// };
 
 export const getAll = async (req, res) => {
   try {
+    
     const posts = await PostModel.find().populate('user').exec();
+
+    if (!posts) {
+      return res.status(500).json({
+        message: 'Не удалось получить статьи',
+      });
+    }
     res.json(posts);
+
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось получить статьи',
+      message: 'Не удалось вернуть статью',
     });
   }
 };
+
 
 export const getOne = async (req, res) => {
   try {
     const postId = req.params.id;
 
-    PostModel.findOneAndUpdate(
-      {
-        _id: postId,
-      },
-      {
-        $inc: { viewsCount: 1 },
-      },
-      {
-        returnDocument: 'after',
-      },
-      (err, doc) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({
-            message: 'Не удалось вернуть статью',
-          });
-        }
-
-        if (!doc) {
-          return res.status(404).json({
-            message: 'Статья не найдена',
-          });
-        }
-
-        res.json(doc);
-      },
+    const doc = await PostModel.findOneAndUpdate(
+      { _id: postId },
+      { $inc: { viewsCount: 1 } },
+      { returnDocument: 'after' }
     ).populate('user');
+
+    if (!doc) {
+      return res.status(404).json({
+        message: 'Статья не найдена',
+      });
+    }
+
+    res.json(doc);
+
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось получить статьи',
+      message: 'Не удалось вернуть статью',
     });
   }
 };
@@ -73,36 +78,24 @@ export const remove = async (req, res) => {
   try {
     const postId = req.params.id;
 
-    PostModel.findOneAndDelete(
-      {
-        _id: postId,
-      },
-      (err, doc) => {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({
-            message: 'Не удалось удалить статью',
-          });
-        }
+    const doc = await PostModel.findOneAndDelete({ _id: postId });
 
-        if (!doc) {
-          return res.status(404).json({
-            message: 'Статья не найдена',
-          });
-        }
+    if (!doc) {
+      return res.status(404).json({
+        message: 'Статья не найдена',
+      });
+    }
 
-        res.json({
-          success: true,
-        });
-      },
-    );
+    res.json({ success: true });
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось получить статьи',
+      message: 'Не удалось удалить статью',
     });
   }
 };
+
+
 
 export const create = async (req, res) => {
   try {
@@ -111,12 +104,14 @@ export const create = async (req, res) => {
       text: req.body.text,
       imageUrl: req.body.imageUrl,
       tags: req.body.tags.split(','),
+      // tags: req.body.tags,
       user: req.userId,
-    });
-
+    } );
+  
     const post = await doc.save();
 
     res.json(post);
+
   } catch (err) {
     console.log(err);
     res.status(500).json({
@@ -125,30 +120,60 @@ export const create = async (req, res) => {
   }
 };
 
+// export const update = async (req, res) => {
+//   try {
+//     const postId = req.params.id;
+
+//     await PostModel.updateOne(
+//       {
+//         _id: postId,
+//       },
+//       {
+//         title: req.body.title,
+//         text: req.body.text,
+//         imageUrl: req.body.imageUrl,
+//         user: req.userId,
+//         tags: req.body.tags.split(','),
+//       },
+//     );
+
+//     res.json({
+//       success: true,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({
+//       message: 'Не удалось обновить статью',
+//     });
+//   }
+// };
+// +++++++++++++++
 export const update = async (req, res) => {
   try {
     const postId = req.params.id;
 
-    await PostModel.updateOne(
-      {
-        _id: postId,
-      },
-      {
-        title: req.body.title,
+    const document = await PostModel.updateOne(
+      { _id: postId },
+      { title: req.body.title,
         text: req.body.text,
         imageUrl: req.body.imageUrl,
         user: req.userId,
-        tags: req.body.tags.split(','),
-      },
-    );
+        tags: req.body.tags.split(',') },
+      { returnDocument: 'after' }
+    )
 
-    res.json({
-      success: true,
+    if (!document) {
+      return res.status(500).json({
+      message: 'Не удалось обновить статью',
     });
+    }
+
+    res.json(document);
+
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось обновить статью',
+       message: 'Не удалось обновить статью'
     });
   }
 };

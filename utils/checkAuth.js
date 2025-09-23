@@ -1,11 +1,24 @@
-
-import { validationResult } from 'express-validator';
+import jwt from 'jsonwebtoken';
 
 export default (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json(errors.array());
-  }
+  const token = (req.headers.authorization || '').replace(/Bearer\s?/, '');
 
-  next();
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, 'secret123');
+
+      req.userId = decoded._id;
+      next();
+    } catch (e) {
+      // return res.status(403).json({
+      //   message: 'Нет доступа',
+      // });
+      // res.send(token)
+      console.log(token)
+    }
+  } else {
+    return res.status(403).json({
+      message: 'Нет доступа',
+    });
+  }
 };

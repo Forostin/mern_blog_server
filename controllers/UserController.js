@@ -19,21 +19,14 @@ export const register = async (req, res) => {
     const user = await doc.save();
 
     const token = jwt.sign(
-      {
-        _id: user._id,
-      },
+      { _id: user._id },
       'secret123',
-      {
-        expiresIn: '30d',
-      },
+      { expiresIn: '30d' }
     );
-
+   
     const { passwordHash, ...userData } = user._doc;
 
-    res.json({
-      ...userData,
-      token,
-    });
+    res.json({ ...userData, token });
   } catch (err) {
     console.log(err);
     res.status(500).json({

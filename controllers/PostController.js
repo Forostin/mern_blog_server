@@ -5,6 +5,11 @@ export const getLastTags = async (req, res) => {
     const posts = await PostModel.find().limit(5).exec();
 
     const tags = posts.map((obj) => obj.tags).flat().slice(0, 5);  
+    
+      if (!tags) {
+      return res.status(500).json({
+        message: 'Не удалось получить теги',
+      })}
 
     res.json(tags);
   } catch (err) {
@@ -14,18 +19,7 @@ export const getLastTags = async (req, res) => {
     });
   }
 };
-    
-// export const getAll = async (req, res) => {
-//   try {
-//     const posts = await PostModel.find().populate('user').exec();
-//     res.json(posts);
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).json({
-//       message: 'Не удалось получить статьи',
-//     });
-//   }
-// };
+
 
 export const getAll = async (req, res) => {
   try {
@@ -40,9 +34,47 @@ export const getAll = async (req, res) => {
     res.json(posts);
 
   } catch (err) {
+      console.log(err);
+      res.status(500).json({
+      message: 'Не удалось вернуть статью',
+    });
+  }
+};
+// ----------------------------------Сортировка по дате:
+export const getSortTimePosts = async (req, res) => {
+  try {
+    const posts = await PostModel.find().sort({ createdAt: -1 }).populate('user').exec();
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        message: 'Статьи не найдены',
+      });
+    }
+
+    res.json(posts);
+  } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось вернуть статью',
+      message: 'Не удалось получить статьи',
+    });
+  }
+};
+// ---------------------------------- Сортировка по количеству просмотров
+export const getPopularPosts = async (req, res) => {
+  try {
+    const posts = await PostModel.find().sort({ viewsCount: -1 }).populate('user').exec();
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        message: 'Статьи не найдены',
+      });
+    }
+
+    res.json(posts);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: 'Не удалось получить статьи',
     });
   }
 };
@@ -103,8 +135,7 @@ export const create = async (req, res) => {
       title: req.body.title,
       text: req.body.text,
       imageUrl: req.body.imageUrl,
-      tags: req.body.tags.split(','),
-      // tags: req.body.tags,
+      tags: req.body.tags  || [],
       user: req.userId,
     } );
   
@@ -115,7 +146,7 @@ export const create = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({
-      message: 'Не удалось создать статью',
+      message: 'Не вдалося создати статтю, всі строки повинні бути заповненні',
     });
   }
 };
@@ -158,7 +189,7 @@ export const update = async (req, res) => {
         text: req.body.text,
         imageUrl: req.body.imageUrl,
         user: req.userId,
-        tags: req.body.tags.split(',') },
+        tags: req.body.tags || [] },
       { returnDocument: 'after' }
     )
 

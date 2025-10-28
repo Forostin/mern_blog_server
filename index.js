@@ -73,8 +73,13 @@ app.get('/tags', PostController.getLastTags);
 
 app.get('/posts', PostController.getAll);
 app.get('/posts/tags', PostController.getLastTags);
+// =========================================================================
+app.get('/posts/comments', PostController.getComments);
+
+
 // Правильный порядок:
 // ВАЖНО: маршруты сортировки ставим выше чем /posts/:id
+app.get('/posts/sortTag/:tag', PostController.sortPostsTag);
 app.get('/posts/sortTime', PostController.getSortTimePosts);
 app.get('/posts/popular', PostController.getPopularPosts);
 app.get('/posts/:id', PostController.getOne);

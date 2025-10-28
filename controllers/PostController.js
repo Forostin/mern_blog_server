@@ -20,6 +20,27 @@ export const getLastTags = async (req, res) => {
   }
 };
 
+// ------------------------------- Получение коментариев:
+export const getComments = async (req, res) => {
+  try {
+    const posts = await PostModel.find().limit(5).exec();
+
+    const coments = posts.map((obj) => obj.comments).flat().slice(0, 5);  
+    
+      if (!coments) {
+      return res.status(500).json({
+        message: 'Нет комментариев',
+      })}
+
+    res.json(coments);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: 'Не удалось получить комментарии',
+    });
+  }
+};
+
 
 export const getAll = async (req, res) => {
   try {
@@ -79,6 +100,30 @@ export const getPopularPosts = async (req, res) => {
   }
 };
 
+// ---------------------------------- Сортировка по тегу:
+export const sortPostsTag = async (req, res) => {
+  try {
+    const tagName = req.params.tag; // получаем тег из URL
+    const posts = await PostModel.find({ tags: tagName })
+      .populate('user')
+      .sort({ createdAt: -1 }) // можно добавить сортировку по дате
+      .exec();
+
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({
+        message: `Статьи с тегом ${tagName} не найдены`,
+      });
+    }
+
+    res.json(posts);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: 'Не удалось получить статьи по тегу',
+    });
+  }
+};
+// ----------------------------------------------------
 
 export const getOne = async (req, res) => {
   try {

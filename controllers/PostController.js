@@ -21,25 +21,25 @@ export const getLastTags = async (req, res) => {
 };
 
 // ------------------------------- Получение коментариев:
-export const getComments = async (req, res) => {
-  try {
-    const posts = await PostModel.find().limit(5).exec();
+// export const getComments = async (req, res) => {
+//   try {
+//     const posts = await PostModel.find().limit(5).exec();
 
-    const coments = posts.map((obj) => obj.comments).flat().slice(0, 5);  
+//     const coments = posts.map((obj) => obj.comments).flat().slice(0, 5);  
     
-      if (!coments) {
-      return res.status(500).json({
-        message: 'Нет комментариев',
-      })}
+//       if (!coments) {
+//       return res.status(500).json({
+//         message: 'Нет комментариев',
+//       })}
 
-    res.json(coments);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({
-      message: 'Не удалось получить комментарии',
-    });
-  }
-};
+//     res.json(coments);
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({
+//       message: 'Не удалось получить комментарии',
+//     });
+//   }
+// };
 
 
 export const getAll = async (req, res) => {
@@ -196,33 +196,6 @@ export const create = async (req, res) => {
   }
 };
 
-// export const update = async (req, res) => {
-//   try {
-//     const postId = req.params.id;
-
-//     await PostModel.updateOne(
-//       {
-//         _id: postId,
-//       },
-//       {
-//         title: req.body.title,
-//         text: req.body.text,
-//         imageUrl: req.body.imageUrl,
-//         user: req.userId,
-//         tags: req.body.tags.split(','),
-//       },
-//     );
-
-//     res.json({
-//       success: true,
-//     });
-//   } catch (err) {
-//     console.log(err);
-//     res.status(500).json({
-//       message: 'Не удалось обновить статью',
-//     });
-//   }
-// };
 // +++++++++++++++
 export const update = async (req, res) => {
   try {

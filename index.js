@@ -12,6 +12,7 @@ import  checkAuth  from './utils/checkAuth.js';
 
 import * as UserController from './controllers/UserController.js';
 import * as PostController  from './controllers/PostController.js';
+import * as CommentController from "./controllers/CommentController.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -23,6 +24,7 @@ const PASSWORD = process.env.DB_PASSWORD;
 const DB_PASSWORD = encodeURIComponent(`${PASSWORD}`) 
 const DB_NAME = process.env.DB_NAME;
 const URL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@myclusterfortest.evvrx.mongodb.net/${DB_NAME}?retryWrites=true&w=majority&appName=MyClusterForTest`
+// const URL = `mongodb+srv://${DB_USER}:${DB_PASSWORD}@myclusterfortest.evvrx.mongodb.net/${DB_NAME}?appName=MyClusterForTest`
 
 mongoose
      .connect(URL)
@@ -46,13 +48,11 @@ const storage = multer.diskStorage({
   },
 });
 
-
 const upload = multer({ storage });
 
 app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static('uploads'));
-
 // app.use('/api/auth', authRoute);
 // app.use('/api/posts', postRouter)
 
@@ -74,27 +74,19 @@ app.get('/tags', PostController.getLastTags);
 app.get('/posts', PostController.getAll);
 app.get('/posts/tags', PostController.getLastTags);
 // =========================================================================
-app.get('/posts/comments', PostController.getComments);
+// // Правильный порядок:
+// // ВАЖНО: маршруты сортировки ставим выше чем /posts/:id
+//  Комментарии — ПЕРВЫМИ
+app.get("/posts/:id/comments", CommentController.getPostComments);
+app.post("/posts/:id/comments", checkAuth, CommentController.create);
 
-
-// Правильный порядок:
-// ВАЖНО: маршруты сортировки ставим выше чем /posts/:id
+// Маршруты сортировки — ВТОРЫМИ
 app.get('/posts/sortTag/:tag', PostController.sortPostsTag);
 app.get('/posts/sortTime', PostController.getSortTimePosts);
 app.get('/posts/popular', PostController.getPopularPosts);
+
+// И только ЗАТЕМ маршрут ID
 app.get('/posts/:id', PostController.getOne);
-// app.get('/posts/:id', async (req, res) => {
-//   try {
-//     const post = await PostModel.findById(req.params.id);
-//     if (!post) {
-//       return res.status(404).json({ message: "Статья не найдена" });
-//     }
-//     res.json(post);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: "Не удалось получить статью" });
-//   }
-// });
 
 
 // Функціонал лише для авторизованих користувачів checkAuth:
